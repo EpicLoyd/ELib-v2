@@ -1,6 +1,7 @@
-local Perms = {}
+local Perms = {}  ---- Handles all Permission System
 Elib.permissions = Perms
 Elib.permissions.groups = {}
+Elib.permissions.settings = {}
 local permissionlist = {}
 permissionlist['spawn'] = 'spawn'
 permissionlist['spectate'] = 'spectate'
@@ -24,8 +25,35 @@ local function SaveData()
 Elib.settings.permissions = Elib.permissions
 end
 
+local function SaveData()
+  Elib.settings.permissions = Elib.permissions
+  local file = GetSerialiser('data/permissions.json', FSMode.WRITE)
+   if file == nil then
+     error("^1Failed to open settings file. Shutdowning...")
+   end
+     file:AddTable("groups", Elib.permissions.groups)
+end
+
+local function LoadData()
+    Elib.permissions.settings = Elib.settings.permissions  
+    local file = GetSerialiser('data/permissions.json', FSMode.READ)
+	 if file == nil then  ----Create new one
+	   SaveSettings()
+	 end
+	 file = GetSerialiser('data/permissions.json', FSMode.READ)
+	   file:ReadTable("group", Elib.permissions.groups)
+	 file:Close()
+end
+
 function Perms.Init()
 
+end
+
+function Perms.Reload()
+  SaveData()
+    Elib.permissions.groups = {}
+    Elib.permissions.settings = {}
+  LoadData()
 end
 
 ---Groups manipulation
@@ -37,9 +65,18 @@ function Perms.group.add(name)
   temp['permissions'] = {}
   temp['members'] = {}
   --TODO HIERARCHY
-  temp['hierarchy'] = ''
+  temp['hierarchy'] = '' ---hierarch from another permission group ( group 'Vip' will include permissions of default group)
   Elib.permissions.groups['name'] = temp
   return temp
+end
+
+function Perms.group.exist(name)
+ if name == ' ' or '' then return false
+   if Elib.permissions.groups['name'] != nil then
+     return false
+   else
+     return true
+   end
 end
 
 function Perms.group.delete(name)
@@ -73,5 +110,6 @@ function Perms.CheckPermission(group, permission)
     return true
   end
 end
+
 
 
