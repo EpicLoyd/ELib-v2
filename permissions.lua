@@ -32,6 +32,7 @@ local function SaveData()
      error("^1Failed to open settings file. Shutdowning...")
    end
      file:AddTable("groups", Elib.permissions.groups)
+	 file:Close()
 end
 
 local function LoadData()

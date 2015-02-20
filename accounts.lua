@@ -3,6 +3,8 @@ Elib.accounts.__index = Elib.accounts
 Elib.accounts.list = {}
 Accounts = Elib.accounts
 
+
+
 ---------------------Meta functions
 
 function Elib.accounts.New(login)
@@ -120,10 +122,22 @@ function Elib.accounts:Rename(newname)
   if self == nil then return nil end
 end
 
+---------
+
 local function Login(login, pass)
+if Elib.accounts.list[login] == nil then return false end
+   local acc = Elib.accounts.list[login]
+   if not acc then return end
+   if acc.password == pass then
+     return true
+   else
+     return false
+   end
 end
 
 local function Register(login, pass)
+
+
 end
 
 ----- Permissons
@@ -149,3 +163,35 @@ function Elib.accounts:SetGroup(group)
   self.group = group
 end
 
+
+---------------------Bind cmds to global commands system
+
+local function NewAccount(ply, login, pass)
+
+end
+
+local function DeleteAccount(ply, login)
+
+end
+
+local function ResetAccount(ply, login)
+
+end
+
+function Elib.accounts.cmds(ply, args)
+ local arg = args[1]
+  if arg == 'new' then
+   local user = args[2]
+   local pass = args[3]
+      NewAccount(ply, user, pass)
+  elseif == 'purge' then
+     local user = args[2]
+	 DeleteAccount(ply, user)
+  elseif == 'reset' then
+     local user = args[3]
+	 ResetAccount(ply, user)
+  end
+end
+
+
+Elib.commands['accounts'] = Elib.accounts.cmds
