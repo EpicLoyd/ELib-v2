@@ -21,9 +21,14 @@ function Utils.randstr(l)
         return s -- Return string
 end
 
-function Utils.StripPort(ip)
+function Utils.StripPortV4(ip)
 	if not string.find(ip,":") then return ip end
 	return string.sub(ip, 1, string.find(ip,":") - 1)
+end
+
+function Utils.StripPortV6(ip)
+   local mn, mx = string.find(ip, ":")
+   return string.sub(ip, 1, mx-1)
 end
 
 function Utils.implode(div, table)

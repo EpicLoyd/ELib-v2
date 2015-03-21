@@ -6,6 +6,7 @@ Elib.modules = {}
 Elib.logger = nil
 Elib.settings = {}
 Elib.commands = {}
+Elib.servercommands = {}
 Elib.settings['Motd'] = 'Welcome'
 
 --[[
@@ -19,7 +20,7 @@ local function SessionLoad()
 end
 ]]  
 
-local function SaveSettings()
+function Elib.save()
   local file = GetSerialiser('data/settings.json', FSMode.WRITE)
    if file == nil then
      error("^1Failed to open settings file. Shutdowning...")
@@ -28,14 +29,10 @@ local function SaveSettings()
 	 file:Close()
 end
 
-local function LoadSettings()
+function Elib.load()
     local file = GetSerialiser('data/settings.json', FSMode.READ)
-	 if file == nil then  ----Create new one
-	   SaveSettings()
-	 end
-	 file = GetSerialiser('data/settings.json', FSMode.READ) -- Reopen it
-	   file:ReadTable("settings", Elib.settings)
-	 file:Close()
+	file:ReadTable("settings", Elib.settings)
+	file:Close()
 end
 
 local function ElibCommand(ply, args)
@@ -44,19 +41,46 @@ local function ElibCommand(ply, args)
    if k == cmd and type(v) == 'function' then
      table.remove(args, 1)
      ok, retval = pcall(v, ply ,args)
-	  if (ok == false) then print("^3SEVERE: Error occured during executing '" .. k .. " ' command") end 
+	  if (ok == false) then print("^2Elib: ^3Error occured during executing '" .. k .. " ' command") end 
+   end
+  end
+end
+
+local function ElibServerCommand(args)
+ local cmd = args[1]
+ if not cmd or cmd == '' or cmd == ' ' then
+    print('^2Elib:\n - accounts    // Show info for accounts system\n - permissions // Show info for permissions system\n - connectmgr  // Show info for connection manager\n - admin       // Show info for admin system')
+ end
+  for k, v in pairs(Elib.servercommands) do
+   if k == cmd and type(v) == 'function' then
+     table.remove(args, 1)
+     ok, retval = pcall(v,args)
+	  if (ok == false) then print("^2Elib: ^3Error occured during executing '" .. k .. " ' command") end 
    end
   end
 end
 
 local function Init()
  print('\n=====ELib Initiliazation======')
- LoadSettings()
- require 'permissions.lua'
+ Elib.load()
  
- require 'accounts.lua'
- 
+ require 'Elibv2/utils.lua'
+ ------Hooks system
+ print('Hooks...')
+ require 'Elibv2/hooks.lua'
+ Elib.hooks.init()
  ------Connection Manager
+ print('Connect Manager...')
+ require 'Elibv2/connect.lua'
+ -----Permissions
+ print('Permissions...')
+ require 'Elibv2/permissions.lua'
+ Elib.permissions.load()
+ -----Accounts
+ print('Accounts...')
+ require 'Elibv2/accounts.lua'
+ 
+
  
  ------Admin System
  
@@ -74,7 +98,11 @@ end
 
 local function Shutdown()
  print('\n=========Elib Shutdown==========')
-
- 
+ print('Saving settings...')
+ Elib.save()
  print('================================\n')
 end
+
+AddServerCommand('elib', ElibServerCommand)
+Init()
+Elib.hooks.add('JPLUA_EVENT_UNLOAD', 'elib_shutdown', Shutdown)

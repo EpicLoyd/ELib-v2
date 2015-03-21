@@ -3,11 +3,9 @@ Elib.accounts.__index = Elib.accounts
 Elib.accounts.list = {}
 Accounts = Elib.accounts
 
-
-
 ---------------------Meta functions
 
-function Elib.accounts.New(login)
+function Elib.accounts.new(login)
   local self = setmetatable({}, Elib.accounts)
   self.login = login
   self.password = ''
@@ -26,8 +24,8 @@ function Elib.accounts.New(login)
   return self
 end
 
-function Elib.accounts.tostring()
-  print("Account ( " .. self.login .. " )")
+function Elib.accounts.tostring(acc)
+  return("Account ( " .. acc.login .. " )")
 end
 
 function Elib.accounts.equal(acc1, acc2)
@@ -38,23 +36,16 @@ function Elib.accounts.equal(acc1, acc2)
   end
 end
 
-setmetatable(Elib.accounts, {
-  __call = cls.New,
-  __tostring = cls.tostring,
-  __eq = cls.equal,
-})
+Elib.accounts.__tostring = Elib.accounts.tostring
+Elib.accounts.__equal = Elib.accounts.equal  
 
-local function LoadData()
+function Accounts.load()
  local temp = {}
  local main = {}
  local file = GetSerialiser('data/accounts.json', FSMode.READ)
-  if file == nil then
-    SaveData()
-  end
- file = GetSerialiser('data/accounts.json', FSMode.READ) --- Reopen
- main = file:ReadTable('account')
+ main = file:ReadTable('accounts')
   for k,v in pairs(main) do
-    local acc = Elib.accounts(k)
+    local acc = Elib.accounts.new(k)
 	acc.password = v['password']
 	acc.admin = v['admin']
 	acc.money = v['money']
@@ -66,13 +57,10 @@ local function LoadData()
   file:Close()
 end
 
-local function SaveData()
+function Accounts.save()
  local temp = {}
  local main = {}
  local file = GetSerialiser('data/accounts.json', FSMode.WRITE)
-  if file == nil then
-    print("^1ERROR:Failed to open settings file. Shutdowning...")
-  end
   for k,v in pairs(Elib.accounts.list) do
     temp['login'] = v.login
 	temp['password'] = v.password
@@ -84,11 +72,11 @@ local function SaveData()
 	temp['clan'] = v.clan
 	  main[v.login] = temp
   end
-  file:AddTable('account', main)
+  file:AddTable('accounts', main)
   file:Close()
 end
 
-function Elib.accounts.Exist(login)
+function Elib.accounts.exist(login)
   if Elib.accounts.list[login] ~= nil then
     return true
   else
@@ -104,12 +92,12 @@ function Elib.accounts.get(login)
  end
 end
 
-function Elib.accounts:GetLogin()
+function Elib.accounts.login()
   if self == nil then return nil end
   return self.login
 end
 
-function Elib.accounts:GetPassword()
+function Elib.accounts.password()
   if self == nil then return nil end
 end
 
@@ -166,8 +154,10 @@ end
 
 ---------------------Bind cmds to global commands system
 
-local function NewAccount(ply, login, pass)
-
+local function NewAccount(login, pass, loginmsg)
+ local acc = Elib.accounts.new(login)
+ acc.password = pass
+ acc.loginmsg = loginmsg
 end
 
 local function DeleteAccount(ply, login)
@@ -178,20 +168,24 @@ local function ResetAccount(ply, login)
 
 end
 
-function Elib.accounts.cmds(ply, args)
+function Elib.accounts.servercmds(args)
  local arg = args[1]
   if arg == 'new' then
    local user = args[2]
    local pass = args[3]
-      NewAccount(ply, user, pass)
-  elseif == 'purge' then
+   local loginmsg = args[4]
+      NewAccount(user, pass, loginmsg)
+  elseif arg == 'purge' then
      local user = args[2]
-	 DeleteAccount(ply, user)
-  elseif == 'reset' then
-     local user = args[3]
-	 ResetAccount(ply, user)
+	 DeleteAccount(user)
+  elseif arg == 'reset' then
+     local user = args[2]
+	 ResetAccount(user)
+  else
+     print("^2Elib Accounts System:\n - new   [user] [password] [loginmsg] // Creates new account\n - purge [user] // Deletes account\n - reset [user] // Set account to default settings")
   end
 end
 
-
-Elib.commands['accounts'] = Elib.accounts.cmds
+Elib.servercommands['accounts'] = Elib.accounts.servercmds 
+Elib.hooks.add('JPLUA_EVENT_UNLOAD', 'accounts_save', Accounts.save)
+Accounts.load()

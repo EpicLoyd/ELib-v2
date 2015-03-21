@@ -1,27 +1,79 @@
-Elib.connectmgr = {}
-Elib.connectmgr.bans = {}
-
+local ConnectManager = {}
+ConnectManager.bans = {}
+ConnectManager.iplog = {}
+Elib.connectmgr = ConnectManager
 ----------------------BanSystem-----------------------------
 local function LoadData()
-
+    local bans = GetSerialiser('data/bans.json', FSMode.READ)
+    local iplog = GetSerialiser('data/permissions.json', FSMode.READ)
+	
+	
+	iplog:Close()
+	bans:Close()
 end
 
 local function SaveData()
+    local bans = GetSerialiser('data/bans.json', FSMode.WRITE)
+    local iplog = GetSerialiser('data/permissions.json', FSMode.WRITE)
+	
+	
+	iplog:Close()
+	bans:Close()
+end
+
+function ConnectManager.IPLoggerCheck(name, ip)
+ if ConnectManager.iplog[ip] == nil then
+	local temp = {}
+	temp[name] = string.format('Date: %s (%s:%s)',os.date('%x'),os.time['hour'], os.time['min'])
+	ConnectManager.iplog[ip] = temp
+	return
+ elseif ConnectManager.iplog[ip][name] ~= nil then
+    return
+ else
+	local players = ''
+	for k,v in pairs(ConnectManager.iplog[ip]) do
+		player = string.format('%s %s', player, k)
+	end
+	local text = string.format('Player %s connected... Player(s) with same ip %s\n')
+	print(text)
+	for k,v in pairs(GetPlayers()) do
+	v:Console(text)
+	end
+ end
+end
+
+function ConnectManager.CheckBan(ip)
+	if Elib.connectmgr.bans[ip] == nil then return false end
+	local bantime = ConnectManager.GetBanTime(ip)
+	local reason = Elib.connectmgr.bans[ip]['reason']
+	if bantime == 'Permanently' then
+		if not reason or reason == ' ' or reason == '' then
+		 return 'You have banned from this server permanently\n'
+		else
+		 return 'You have banned from this server permanently\n Reason: %s\n'
+		end
+	else
+		if not reason or reason == ' ' or reason == '' then
+		 return 'You have banned from this server for %s\n'
+		else
+		 return 'You have banned from this server for %s\n Reason: %s\n'
+		end
+	end
+end
+
+function ConnectManager.CheckUUID(uuid)
 
 end
 
-function Elib.connectmgr.CheckBan(ip, uuid)
- 
-
-end
-
-function Elib.connectmgr.GetBanTime(ip, uuid)
-if Elib.connectmgr.bans[ip] == nil then return false end
+function ConnectManager.GetBanTime(ip)
+if Elib.connectmgr.bans[ip] == nil then return "0 seconds" end
 local days, hours, mins, secs, timediff
- local diff = Elib.connectmgr.bans[ip]['time'] - os.time() 
+local diff = Elib.connectmgr.bans[ip]['time'] - os.time() 
  
- 	if diff <= 0 then
-		return "0 seconds"
+ 	if diff == 0 then
+		return "Permanently"
+	elseif diff < 0 then
+	    return "0 seconds"
 	end
 	days = math.floor(diff / 86400)
 	diff = diff - (days * 86400)
@@ -58,23 +110,18 @@ local days, hours, mins, secs, timediff
 			return string.format("%i seconds", secs)
 		end
 	end
- 
- 
- 
-
-   return time
 end
 
 
-function Elib.connectmgr.AddBan(ip, uuid, time, reason)
+function ConnectManager.AddBan(ip, uuid, time, reason)
    local tbl = Elib.connectmgr.bans
    local temp = {}
    if tbl[ip] == nil then 
     temp['ip'] = ip
-	if uuid ~= nil then temp['uuid'] = uuid
+	if uuid ~= '' or uuid ~= ' ' then temp['uuid'] = uuid end
 	temp['time'] = time
 	temp['reason'] = reason
-	tlb[ip] = temp
+	tbl[ip] = temp
    else
     if tbl[ip]['time'] == time and time == 0 then return ---- permanent - do nothing
 	else tbl[ip]['time'] = tbl[ip]['time'] + time --- Add Some :3
@@ -83,9 +130,9 @@ function Elib.connectmgr.AddBan(ip, uuid, time, reason)
 end
 
 
-function Elib.connectmgr.RemoveBan(ip, uuid)
-
-
+function ConnectManager.RemoveBan(ip)
+if Elib.connectmgr.bans[ip] == nil then return end
+Elib.connectmgr.bans[ip] = nil
 end
 
 ------------------------------------------------------------
