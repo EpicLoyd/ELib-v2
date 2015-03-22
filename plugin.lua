@@ -69,6 +69,7 @@ local function Init()
  ------Connection Manager
  print('Connect Manager...')
  require 'Elibv2/connect.lua'
+ Elib.ConnectManager.init()
  -----Permissions
  print('Permissions...')
  require 'Elibv2/permissions.lua'
