@@ -4,7 +4,7 @@ Elib.hooks = Hook -- Hooks system ( because i don't like current listeners syste
 local Hooks = {}
 Hooks['JPLUA_EVENT_UNLOAD'] = {}
 Hooks['JPLUA_EVENT_RUNFRAME'] = {}
-Hooks['JPLUA_EVENT_CHARMSGRECV'] = {}
+Hooks['JPLUA_EVENT_CHATMSGRECV'] = {}
 Hooks['JPLUA_EVENT_CLIENTBEGIN'] = {}
 Hooks['JPLUA_EVENT_CLIENTCOMMAND'] = {}
 Hooks['JPLUA_EVENT_CLIENTCONNECT'] = {}
@@ -28,17 +28,17 @@ end
 
 
 function Hook.init()
- AddListener('JPLUA_EVENT_UNLOAD', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_UNLOAD', ...) return ret end)
- AddListener('JPLUA_EVENT_RUNFRAME', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_RUNFRAME', ...) return ret end)
- AddListener('JPLUA_EVENT_CHATMSGRECV', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CHATMSGRECV', ...) return ret end)
- AddListener('JPLUA_EVENT_CLIENTBEGIN', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTBEGIN', ...) return ret end)
- AddListener('JPLUA_EVENT_CLIENTCOMMAND', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTCOMMAND', ...) return ret end)
- AddListener('JPLUA_EVENT_CLIENTCONNECT', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTCONNECT', ...) return ret end)
- AddListener('JPLUA_EVENT_CLIENTDISCONNECT', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTDISCONNECT', ...) return ret end)
- AddListener('JPLUA_EVENT_CLIENTSPAWN', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTSPAWN', ...) return ret end)
- AddListener('JPLUA_EVENT_CLIENTUSERINFOCHANGED', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTUSERINFOCHANGED', ...) return ret end)
- AddListener('JPLUA_EVENT_PAIN', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_PAIN', ...) return ret end)
- AddListener('JPLUA_EVENT_PLAYERDEATH', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_PLAYERDEATH', ...) return ret end)
+ AddListener('JPLUA_EVENT_UNLOAD', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_UNLOAD', ...)  end)
+ AddListener('JPLUA_EVENT_RUNFRAME', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_RUNFRAME', ...) end)
+ AddListener('JPLUA_EVENT_CHATMSGRECV', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CHATMSGRECV', ...) end)
+ AddListener('JPLUA_EVENT_CLIENTBEGIN', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTBEGIN', ...) end)
+ AddListener('JPLUA_EVENT_CLIENTCOMMAND', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTCOMMAND', ...) end)
+ AddListener('JPLUA_EVENT_CLIENTCONNECT', function(...) return Elib.ConnectManager.Connect(...) end)
+ AddListener('JPLUA_EVENT_CLIENTDISCONNECT', function(...) _, ret = pcall(Elib.ConnectManager.Disconnect, ...) end)
+ AddListener('JPLUA_EVENT_CLIENTSPAWN', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTSPAWN', ...) end)
+ AddListener('JPLUA_EVENT_CLIENTUSERINFOCHANGED', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_CLIENTUSERINFOCHANGED', ...) end)
+ AddListener('JPLUA_EVENT_PAIN', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_PAIN', ...) end)
+ AddListener('JPLUA_EVENT_PLAYERDEATH', function(...) _, ret = pcall(Execute, 'JPLUA_EVENT_PLAYERDEATH', ...) end)
  --for now...
 end
 

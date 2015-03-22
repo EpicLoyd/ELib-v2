@@ -36,7 +36,7 @@ end
 
 function Perms.load()
     local file = GetSerialiser('data/permissions.json', FSMode.READ)
-	file:ReadTable('groups', Elib.permissions.groups)
+	Elib.permissions.groups = file:ReadTable('groups')
 	file:Close()
 end
 

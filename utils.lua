@@ -1,5 +1,5 @@
 local Utils = {}
-Elib.utils  = {}
+Elib.Utils  = Utils
 
 -- Splits up the IP in 4 individual numbers
 function Utils.SplitIP(ip)

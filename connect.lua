@@ -1,37 +1,46 @@
 local ConnectManager = {}
 ConnectManager.bans = {}
 ConnectManager.iplog = {}
-Elib.connectmgr = ConnectManager
+ConnectManager.maintenance = {}
+ConnectManager.maintenance.cvar = CreateCvar('elib_maintenance', '0', CvarFlags.ARCHIVE)
+ConnectManager.maintenance.message = CreateCvar('elib_maintenance_message', '', CvarFlags.ARCHIVE)
+ConnectManager.iplog.enabled = CreateCvar('elib_iplogger', '1', CvarFlags.ARCHIVE)
+ConnectManager.iplog.list = {}
+Elib.ConnectManager = ConnectManager
 ----------------------BanSystem-----------------------------
-local function LoadData()
+function ConnectManager.load()
     local bans = GetSerialiser('data/bans.json', FSMode.READ)
-    local iplog = GetSerialiser('data/permissions.json', FSMode.READ)
+    local iplog = GetSerialiser('data/iplog.json', FSMode.READ)
 	
+	ConnectManager.bans =bans:ReadTable('bans')
+	ConnectManager.iplog.list = iplog:ReadTable('iplog')
 	
-	iplog:Close()
 	bans:Close()
+	iplog:Close()
 end
 
-local function SaveData()
+function ConnectManager.save()
     local bans = GetSerialiser('data/bans.json', FSMode.WRITE)
-    local iplog = GetSerialiser('data/permissions.json', FSMode.WRITE)
+    local iplog = GetSerialiser('data/iplog.json', FSMode.WRITE)
 	
+	bans:AddTable('bans', ConnectManager.bans)
+	iplog:AddTable('iplog', ConnectManager.iplog.list)
 	
 	iplog:Close()
 	bans:Close()
 end
 
 function ConnectManager.IPLoggerCheck(name, ip)
- if ConnectManager.iplog[ip] == nil then
+ if ConnectManager.iplog.list[ip] == nil then
 	local temp = {}
-	temp[name] = string.format('Date: %s (%s:%s)',os.date('%x'),os.time['hour'], os.time['min'])
-	ConnectManager.iplog[ip] = temp
+	temp[name] = string.format('Date: %s',os.date('%c'))
+	ConnectManager.iplog.list[ip] = temp
 	return
- elseif ConnectManager.iplog[ip][name] ~= nil then
+ elseif ConnectManager.iplog.list[ip][name] ~= nil then
     return
  else
 	local players = ''
-	for k,v in pairs(ConnectManager.iplog[ip]) do
+	for k,v in pairs(ConnectManager.iplog.list[ip]) do
 		player = string.format('%s %s', player, k)
 	end
 	local text = string.format('Player %s connected... Player(s) with same ip %s\n')
@@ -43,9 +52,9 @@ function ConnectManager.IPLoggerCheck(name, ip)
 end
 
 function ConnectManager.CheckBan(ip)
-	if Elib.connectmgr.bans[ip] == nil then return false end
+	if ConnectManager.bans[ip] == nil then return false end
 	local bantime = ConnectManager.GetBanTime(ip)
-	local reason = Elib.connectmgr.bans[ip]['reason']
+	local reason = ConnectManager.bans[ip]['reason']
 	if bantime == 'Permanently' then
 		if not reason or reason == ' ' or reason == '' then
 		 return 'You have banned from this server permanently\n'
@@ -59,6 +68,7 @@ function ConnectManager.CheckBan(ip)
 		 return 'You have banned from this server for %s\n Reason: %s\n'
 		end
 	end
+	return false
 end
 
 function ConnectManager.CheckUUID(uuid)
@@ -66,9 +76,9 @@ function ConnectManager.CheckUUID(uuid)
 end
 
 function ConnectManager.GetBanTime(ip)
-if Elib.connectmgr.bans[ip] == nil then return "0 seconds" end
+if ConnectManager.bans[ip] == nil then return "0 seconds" end
 local days, hours, mins, secs, timediff
-local diff = Elib.connectmgr.bans[ip]['time'] - os.time() 
+local diff = ConnectManager.bans[ip]['time'] - os.time() 
  
  	if diff == 0 then
 		return "Permanently"
@@ -114,7 +124,7 @@ end
 
 
 function ConnectManager.AddBan(ip, uuid, time, reason)
-   local tbl = Elib.connectmgr.bans
+   local tbl = ConnectManager.bans
    local temp = {}
    if tbl[ip] == nil then 
     temp['ip'] = ip
@@ -136,10 +146,30 @@ Elib.connectmgr.bans[ip] = nil
 end
 
 ------------------------------------------------------------
-local function Connect(ply) --- executed when player is connected
+function ConnectManager.Connect(clientNum, userinfo, ip, firsttime) --- executed when player is connected
+ local ip = Elib.Utils.StripPortV4(ip)
+ print('IP : ' .. ip)
+ if ip == 'bot' then return nil end
+ local banstatus = ConnectManager.CheckBan(ip)
+ if banstatus ~= false then
+    return banstatus
+ end
+ if ConnectManager.iplog.enabled:GetInteger() == 1 then
+	ConnectManager.IPLoggerCheck(userinfo['name'], ip)
+ end
+ if ConnectManager.maintenance.cvar:GetInteger() == 1 then
+    if ConnectManager.maintenance.message:GetString() == '' or ConnectManager.maintenance.message:GetString() == ' ' then
+		return "^2Elib: ^1Server temporarily closed for maintenance.Try again later... "
+	else
+		return ConnectManager.maintenance.message:GetString()
+	end
+ end
+    return nil
+end
+
+function ConnectManager.Disconnect(ply) --- executed when player disconnected
 
 end
 
-local function Disconnect(ply) --- executed when player disconnected
-
-end
+Elib.hooks.add('JPLUA_EVENT_UNLOAD', 'connect_save', ConnectManager.save)
+ConnectManager.load()

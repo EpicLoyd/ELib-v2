@@ -22,16 +22,13 @@ end
 
 function Elib.save()
   local file = GetSerialiser('data/settings.json', FSMode.WRITE)
-   if file == nil then
-     error("^1Failed to open settings file. Shutdowning...")
-   end
      file:AddTable("settings", Elib.settings)  --- Save
 	 file:Close()
 end
 
 function Elib.load()
     local file = GetSerialiser('data/settings.json', FSMode.READ)
-	file:ReadTable("settings", Elib.settings)
+	Elib.settings = file:ReadTable("settings")
 	file:Close()
 end
 
