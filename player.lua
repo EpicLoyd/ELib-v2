@@ -1,86 +1,91 @@
 Elib.players = {} --- Handles all player functions
-local plytab = GetPlayerTable() -- get player metatable
+local plytable = GetPlayerTable() -- get player metatable
 
 ---------Accounts 
 
-function plytable:CreateStorage(ply)
- local temp = {}
- local name = JPUtil.StripColours(ply:GetName())
- temp['name'] = name --- Init some data
- temp['group'] = 'default'
- temp['account'] = ''
- temp['begintime'] = GetTime()
-Elib.players[name] = temp
-end
-function plytable:IsLogged(ply)
-   if ply == nil then return end
-   if Elib.players[name]['account'] ~= nil 
-      return true
-   else
-      return false
-   end
+function plytable:CreateStorage()
+	local temp = {}
+	local name = JPUtil.StripColours(self.name)
+	temp['name'] = name
+	temp['group'] = 'default'
+	temp['account'] = ''
+	temp['begintime'] = GetTime()
+	Elib.players[self.id] = temp
 end
 
-function plytable:SetAccount(ply, account)
-  if ply or account == nil then return end 
-  local name = JPUtil.StripColours(ply:GetName())
-  Elib.players[name]['account'] = account
+function plytable:CleanStorage()
+	Elib.players[self.id] = nil
 end
 
-function plytable:GetAccount(ply)
-  if ply == nil then return end
-    local name = JPUtil.StripColours(ply:GetName())
-   if Elib.players[name]['account'] ~= nil 
-      return Elib.players[name]['account']
-   end
-  return nil
+function plytable:IsLogged()
+print(self)
+	if self == nil then return false end
+	if Elib.players[self.id]['account'] ~= nil or Elib.players[self.id]['account'] ~= '' then
+		return true
+	else
+		return false
+	end
+end
+
+function plytable:SetAccount(account)
+	if self or account == nil then return end
+	Elib.players[self.id]['account'] = account
+end
+
+function plytable:GetAccount()
+	if self == nil then return nil end
+	if Elib.players[self.id]['account'] ~= nil then
+		return Elib.players[self.id]['account']
+	end
+	return nil
 end
 
 
 --------- 
 
 
-function plytable:Chat(ply)
-   if ply == nil then return end
-    SendReliableCommand(ply:GetID(), string.format('chat "%s"', msg))
+function plytable:Chat(msg)
+	if self == nil then return end
+	SendReliableCommand(self.id, string.format('chat "%s"', msg))
 end
 
-function plytable:Center(ply)
-   if ply == nil then return end
-    SendReliableCommand(ply:GetID(), string.format('cp "%s"', msg))
+function plytable:Center(msg)
+	if self == nil then return end
+    SendReliableCommand(self.id, string.format('cp "%s"', msg))
 end
 
-function plytable:Console(ply)
-   if ply == nil then return end
-    SendReliableCommand(ply:GetID(), string.format('print "%s"', msg))
+function plytable:Console(msg)
+	if self == nil then return end
+    SendReliableCommand(self.id, string.format('print "%s"', msg))
 end
 
-function plytable:Command(ply)
-   if ply == nil then return end
-    SendReliableCommand(ply:GetID(), string.format('%s', cmd))
+function plytable:Command(msg)
+	if self == nil then return end
+    SendReliableCommand(self.id, string.format('%s', cmd))
 end
 
 --------  Permissions
 
-function plytable:GetGroup(ply)
-   if ply == nil then return end
-   local acc = ply:GetAccount()
-   if acc.group and acc.group ~= '' or  ' ' then
-     return acc.group
-   else
-     return nil
-   end
+function plytable:GetGroup()
+	if self == nil then return end
+	local acc = self:GetAccount()
+	if acc.group and acc.group ~= 'default' and acc.group ~= ' ' then
+		return acc.group
+	elseif Elib.players[self.id]['group'] ~= 'default' then
+		return Elib.players[self.id]['group']
+	else
+		return 'default'
+	end
 end
 
-function plytable:SetGroup(ply, group)
-   if ply == nil then return end
-   if not Perms.group.exist(group) then return end
-   local acc = ply:GetAccount()
-   if not acc then
-    Elib.players[JPUtil.StripColours(ply:GetName())]['group'] = group
-   else
-    acc.group = group
-   end
-   
+function plytable:SetGroup(roup)
+	if self == nil then return end
+	if not Perms.group.exist(group) then return end
+	local acc = self:GetAccount()
+	if not acc then
+		Elib.players[self.id]['group'] = group
+	else 
+		acc.group = group
+	end 
 end
 

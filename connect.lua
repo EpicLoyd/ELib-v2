@@ -189,7 +189,6 @@ end
 ------------------------------------------------------------
 function ConnectManager.Connect(clientNum, userinfo, ip, firsttime) --- executed when player is connected
 	local ip = Elib.Utils.StripPortV4(ip)
-	print('IP : ' .. ip)
 	if ip == 'bot' then return nil end
 	local banstatus = ConnectManager.CheckBan(ip)
 	if banstatus ~= false then
@@ -209,7 +208,8 @@ function ConnectManager.Connect(clientNum, userinfo, ip, firsttime) --- executed
 end
 
 function ConnectManager.Disconnect(ply) --- executed when player disconnected
-
+	ply:CleanStorage() --- Clean Internal storage
+	
 end
 
 function ConnectManager.servercmds(args)

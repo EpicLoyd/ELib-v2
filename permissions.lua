@@ -2,8 +2,9 @@ local Perms = {}  ---- Handles all Permission System
 Perms.groups = {}
 Perms.group = {}
 Perms.settings = {}
-Elib.permissions = Perms
 local permissionlist = {}
+Elib.permissions = Perms
+Elib.permissions.list = permissionlist
 
 permissionlist['spawn'] = 'spawn' -- Allow spawning
 permissionlist['spectate'] = 'spectate' -- Allow spectating

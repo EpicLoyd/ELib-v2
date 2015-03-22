@@ -77,6 +77,13 @@ local function Init()
  -----Accounts
  print('Accounts...')
  require 'Elibv2/accounts.lua'
+ ----Player Extension
+ print('PlayerExtension...')
+ require 'Elibv2/player.lua'
+ ----Game
+ print('GameExtension...')
+ require 'Elibv2/game.lua'
+ 
  
 
  
