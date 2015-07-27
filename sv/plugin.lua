@@ -8,17 +8,27 @@ Elib.settings = {}
 Elib.commands = {}
 Elib.servercommands = {}
 Elib.settings['Motd'] = 'Welcome'
+Elib.session = nil
 
---[[
 
 local function SessionSave()
+  local file = OpenFile('lua/sv/' .. plugin['dirname'] .. '/data/lastsession.json', FSMode.Read)
+  if file:Read == '0' then return end
+  file:Close()
+  file = GetSerialiser('data/lastsession.json', FSMode.Write)
+  file:AddTable('data', Elib.session)
 
-end                              -------TODO: Sessions
+end                              
 
 local function SessionLoad()
-
+  local file = GetSerialiser('data/lastsession.json', FSMode.READ)
+  if not file then return end
+  Elib.session = file:ReadTable('data')
+  file:Close()
+  file = OpenFile('lua/sv/' .. plugin['dirname'] .. '/data/lastsession.json', FSMode.Write)
+  if not file then return end
+  file:Write('0')
 end
-]]  
 
 function Elib.save()
   local file = GetSerialiser('data/settings.json', FSMode.WRITE)

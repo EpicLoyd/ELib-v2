@@ -20,7 +20,7 @@ local function Execute(id, ...)
   if type(v['func']) == 'function' then
    ok, retval = pcall(v['func'], ...)
    if ok == false then
-     print(string.format("^2Elib: ^2Hook %s error: %s", tostring(retval)))
+     print(string.format("^2Elib: ^2Hook %s error: %s", id,tostring(retval)))
    end
   end
  end
