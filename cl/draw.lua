@@ -26,7 +26,6 @@ function Draw.AddDrawText(x,y, text, color, scale, style, font, fadetime, fadesp
 	temp['fadetime'] = fadetime or 0
 		if (fadetime ~= 0) and (fadetime ~= nil) then
 			temp['fadetime'] = fadetime 
-			temp['fadespeed'] = fadespeed or 500 -- 500:default
 			temp['fadestart'] = GetRealTime() 
 		end
 	temp['custom_font'] = customfont or false
@@ -36,7 +35,7 @@ function Draw.AddDrawText(x,y, text, color, scale, style, font, fadetime, fadesp
 					if (temp['fadetime'] ~= 0) then
 						local cur = GetRealTime() - temp['fadestart']
 						if cur >= temp['fadestart'] + temp['fadetime'] then return end
-						temp['color'][4] = (temp['fadestart'] + temp['fadetime']) * 1 / temp['fadespeed']
+						temp['color'][4] = cur / temp['fadetime']
 					end
 					DrawText(temp['x'], temp['y'], temp['text'], temp['color'], temp['scale'], temp['style'], temp['font'])
 				 end
