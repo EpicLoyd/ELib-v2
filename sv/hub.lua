@@ -1,6 +1,24 @@
 local Hub = {}
 Hub.servers = {}
-Elib.hub = {} --- Hub System
+Elib.Hub = Hub --- Hub System
+
+local function LoadServerList()
+	local file = GetSerialiser('data/serverlist.json', FSMode.READ)
+	if not file then 
+		file = GetSerialiser('data/serverlist.json', FSMode.WRITE)
+		local temp = {}
+		local tempserver = {}
+			tempserver['Name'] = 'JKNet DuelServer'
+			tempserver['IP'] = '192.168.1.1'
+			tempserver['PORT'] = '29071'
+		temp['Duel'] = tempserver
+		file:AddTable('servers', temp)
+		file:Close()
+	end
+	local file = GetSerialiser('data/serverlist.json', FSMode.READ)
+	if not file then error("^2JPLua: ^1FileSystem Failure") return end
+	Hub.servers = file:ReadTable('servers')
+end
 
 
 local function Redirect(player, ip, port)
@@ -12,7 +30,7 @@ local function ServerInfo(server, player, data)
 end
 
 function Hub.Init()
-
+	LoadServerList()
 end
 
 function Hub.AddServer(name, ip)

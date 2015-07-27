@@ -42,6 +42,7 @@ function Accounts.load()
 	local temp = {}
 	local main = {}
 	local file = GetSerialiser('data/accounts.json', FSMode.READ)
+	if not file then Accounts.save() return end
 	main = file:ReadTable('accounts')
 	for k,v in pairs(main) do
 		local acc = Elib.accounts.new(k)
@@ -60,6 +61,7 @@ function Accounts.save()
 	local temp = {}
 	local main = {}
 	local file = GetSerialiser('data/accounts.json', FSMode.WRITE)
+	if not file then return end
 	for k,v in pairs(Elib.accounts.list) do
 		temp['login'] = v.login
 		temp['password'] = v.password

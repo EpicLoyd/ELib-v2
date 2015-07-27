@@ -22,23 +22,28 @@ end
 function ConnectManager.load()
     local bans = GetSerialiser('data/bans.json', FSMode.READ)
     local iplog = GetSerialiser('data/iplog.json', FSMode.READ)
+	if bans then
+		ConnectManager.bans = bans:ReadTable('bans')
+		bans:Close()
+	end
+	if iplog then
+		ConnectManager.iplog.list = iplog:ReadTable('iplog')
+		iplog:Close()
+	end
 	
-	ConnectManager.bans =bans:ReadTable('bans')
-	ConnectManager.iplog.list = iplog:ReadTable('iplog')
-	
-	bans:Close()
-	iplog:Close()
 end
 
 function ConnectManager.save()
 	local bans = GetSerialiser('data/bans.json', FSMode.WRITE)
     local iplog = GetSerialiser('data/iplog.json', FSMode.WRITE)
-	
-	bans:AddTable('bans', ConnectManager.bans)
-	iplog:AddTable('iplog', ConnectManager.iplog.list)
-	
-	iplog:Close()
-	bans:Close()
+	if bans then
+		bans:AddTable('bans', ConnectManager.bans)
+		bans:Close()
+	end
+	if iplog then
+		iplog:AddTable('iplog', ConnectManager.iplog.list)
+		iplog:Close()
+	end
 end
 
 

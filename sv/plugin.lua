@@ -1,7 +1,7 @@
-local plugin = RegisterPlugin("EpicLibrary", "v2") --- By EpicLoyd
+Elib = {}
+Elib.plugin = RegisterPlugin("EpicLibrary", "v2") --- By EpicLoyd
 
 CreateCvar('^1Elibvesion', '2.0^1dev', 0x0004)
-Elib = {}
 Elib.modules = {}
 Elib.logger = nil
 Elib.settings = {}
@@ -13,7 +13,7 @@ Elib.session = nil
 
 local function SessionSave()
   local file = OpenFile('lua/sv/' .. plugin['dirname'] .. '/data/lastsession.json', FSMode.Read)
-  if file:Read == '0' then return end
+  if file:Read() == '0' then return end
   file:Close()
   file = GetSerialiser('data/lastsession.json', FSMode.Write)
   file:AddTable('data', Elib.session)
@@ -38,6 +38,7 @@ end
 
 function Elib.load()
     local file = GetSerialiser('data/settings.json', FSMode.READ)
+	if not file then Elib.save() return end
 	Elib.settings = file:ReadTable("settings")
 	file:Close()
 end
@@ -71,30 +72,32 @@ local function Init()
  print('\n=====ELib Initiliazation======')
  Elib.load()
  
- require 'Elibv2/utils.lua'
+ require(Elib.plugin['dirname'] .. '/utils.lua')
  ------Hooks system
  print('Hooks...')
- require 'Elibv2/hooks.lua'
+ require(Elib.plugin['dirname'] .. '/hooks.lua')
  Elib.hooks.init()
  ------Connection Manager
  print('Connect Manager...')
- require 'Elibv2/connect.lua'
+ require(Elib.plugin['dirname'] .. '/connect.lua')
  Elib.ConnectManager.init()
  -----Permissions
  print('Permissions...')
- require 'Elibv2/permissions.lua'
+ require(Elib.plugin['dirname'] .. '/permissions.lua')
  Elib.permissions.load()
  -----Accounts
  print('Accounts...')
- require 'Elibv2/accounts.lua'
+ require(Elib.plugin['dirname'] .. '/accounts.lua')
  ----Player Extension
  print('PlayerExtension...')
- require 'Elibv2/player.lua'
+ require(Elib.plugin['dirname'] .. '/player.lua')
  ----Game
  print('GameExtension...')
- require 'Elibv2/game.lua'
- 
- 
+ require(Elib.plugin['dirname'] .. '/game.lua')
+ ----Hub
+ print('Hub...')
+ require(Elib.plugin['dirname'] .. '/hub.lua') 
+ Elib.Hub.Init()
 
  
  ------Admin System

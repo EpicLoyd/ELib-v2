@@ -31,12 +31,15 @@ end
 
 function Perms.save()
     local file = GetSerialiser('data/permissions.json', FSMode.WRITE)
-    file:AddTable('groups', Elib.permissions.groups)
-	file:Close()
+	if file then
+		file:AddTable('groups', Elib.permissions.groups)
+		file:Close()
+	end
 end
 
 function Perms.load()
     local file = GetSerialiser('data/permissions.json', FSMode.READ)
+	if not file then Perms.save() return end
 	Elib.permissions.groups = file:ReadTable('groups')
 	file:Close()
 end
