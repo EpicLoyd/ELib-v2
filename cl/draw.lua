@@ -7,22 +7,30 @@ local function FadeColor(color,startt, stopt)
 end
 
 local function DrawLoop()
-	
+	for _,v in pairs(Draw.drawlist) do
+		local ok, ret = pcall(v['func'])
+		if not ok then print("^2Elib Draw System: ^1Failed To Draw: " .. tostring(ret)) end
+	end
 end
 
-local function Draw.Reload()
+AddListener('JPLUA_EVENT_RUNFRAME', DrawLoop)
+
+function Draw.Reload()
 	Draw.drawlist = {}
 end
 
-function Draw.AddDrawText(x,y, text, color, scale, style, font, fadetime, fadespeed,customfont) --elib draw text X Y TEXT BITCOLOR(TEXT?) STYLE FONT(TEXT?) [FADETIME] [CUSTOMFONT]
+function Draw.AddDrawText(x,y, text, color, scale, style, font, timetodraw, fadetime, customfont) --elib draw text X Y TEXT BITCOLOR(TEXT?) STYLE FONT(TEXT?) [FADETIME] [CUSTOMFONT]
 	local temp = {}
+	temp['id'] = #Draw.drawlist + 1
 	temp['x'] = x or 0
 	temp['y'] = y or 0
 	temp['text'] = text or ''
-	temp['color'] = {1,1,1,1} -- for now
+	temp['color'] = {0.55,0.55,0.55,0.55} -- for now
 	temp['scale'] = scale or 0
 	temp['style'] = style or 0
 	temp['font'] = font or 0
+	temp['timetodraw'] = timetodraw or 1
+	temp['startdraw'] = GetRealTime()
 	temp['fadetime'] = fadetime or 0
 		if (fadetime ~= 0) and (fadetime ~= nil) then
 			temp['fadetime'] = fadetime 
@@ -31,13 +39,20 @@ function Draw.AddDrawText(x,y, text, color, scale, style, font, fadetime, fadesp
 	temp['custom_font'] = customfont or false
 	
 	local func = function( currentime)
-					local alpha = temp['color'][4] -- fade
-					if (temp['fadetime'] ~= 0) then
+					if temp['timetodraw'] + temp['startdraw'] > GetRealTime() then -- draw!
+						DrawText(temp['x'], temp['y'], temp['text'], temp['color'], temp['scale'], temp['style'], temp['font'])
+					end
+					if (temp['fadetime'] ~= 0) and temp['timetodraw'] + temp['startdraw'] <= GetRealTime() then
+						if temp['fadestart'] == 0 then temp['fadestart'] = GetRealTime()  end -- start fading
 						local cur = GetRealTime() - temp['fadestart']
 						if cur >= temp['fadestart'] + temp['fadetime'] then return end
 						temp['color'][4] = cur / temp['fadetime']
+						if temp['color'][4] <= 0 then
+							Draw.drawlist[temp['id']] = nil -- fade finished
+							return
+						end
+						DrawText(temp['x'], temp['y'], temp['text'], temp['color'], temp['scale'], temp['style'], temp['font'])
 					end
-					DrawText(temp['x'], temp['y'], temp['text'], temp['color'], temp['scale'], temp['style'], temp['font'])
 				 end
 	temp['func'] = func
 	Draw.drawlist[#Draw.drawlist + 1] = temp
@@ -55,11 +70,13 @@ function Draw.servercmds(args)
 	local arg = args[1]
 	table.remove(args, 1)
 	if arg == 'text' then
-		pcall(Draw.AddDrawText, unpack(args))
+		print('DRAWTEXT')
+		local ok,ret = pcall(Draw.AddDrawText, table.unpack(args))
+		print(ok,ret)
 	elseif arg == 'pic' then
-		pcall(Draw.Draw.AddDrawPic, unpack(args))
+		pcall(Draw.Draw.AddDrawPic, table.unpack(args))
 	elseif arg == 'rect' then
-		pcall(Draw.Draw.AddDrawRect, unpack(args))
+		pcall(Draw.Draw.AddDrawRect, table.unpack(args))
 	elseif arg == 'reload' then
 		pcall(Draw.Reload)
 	else

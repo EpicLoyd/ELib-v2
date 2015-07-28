@@ -1,9 +1,12 @@
 Elib = {}
 Elib.plugin = RegisterPlugin('EpicLibrary', 'v2') --- by EpicLoyd
+Elib.servercommands = {}
 
+require(Elib.plugin['dirname'] .. '/draw.lua')
 
-local function Elib.servercommand(args)
+function Elib.servercommand(args)
  local cmd = args[1]
+ print(cmd)
  if not cmd or cmd == '' or cmd == ' ' then
     return
  end
@@ -11,9 +14,9 @@ local function Elib.servercommand(args)
    if k == cmd and type(v) == 'function' then
      table.remove(args, 1)
      ok, retval = pcall(v,args)
-	  if (ok == false) then print("^2Elib: ^3Error occured during executing '" .. k .. " ' servercommand") end 
+	  if (ok == false) then print("^2Elib: ^3Error occured during executing '" .. k .. " ' servercommand ( " .. retval .. " )") end 
    end
   end
 end
 
-AddServerComand('elib', Elib.servercommand)
+AddServerCommand('elib', Elib.servercommand)
